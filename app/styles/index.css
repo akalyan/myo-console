@@ -1,0 +1,18 @@
+body {
+  background-color: rgb(97, 97, 97);
+  font: 400 1em/1.38 Arvo;
+  color: rgb(110, 175, 181);
+}
+
+.element {
+  height: 200px;
+  width: 100%;
+}
+
+svg > path {
+  stroke: white;
+}
+
+text {
+  color: rgb(110, 175, 181);
+}
