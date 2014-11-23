@@ -12,6 +12,7 @@
   },
   "author": "Luis gutierrez",
   "devDependencies": {
-    "myo": "^1.0.0"
+    "myo": "^1.0.0",
+    "ws": "^0.5.0"
   }
 }

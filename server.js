@@ -30,21 +30,11 @@ module.exports = function(conf){
 
   var relative_dirs = function(curr) {
     return path.relative(conf.dir, curr);
-  }
+  };
 
   var excluded_folders = function(val) {
     return !val.match("bower_components");
-  }
-
-  app.get("/json", function(req, res, next) {
-    var readable = fs.createReadStream("app/iris.json");
-    readable.pipe(res);
-  });
-
-  app.get("/csv", function(req, res, next) {
-    var readable = fs.createReadStream("app/iris.csv");
-    readable.pipe(res);
-  });
+  };
 
   app.listen(conf.port);
   console.log("Server started in http://localhost:" + conf.port);
