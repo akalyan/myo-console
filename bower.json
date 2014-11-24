@@ -2,7 +2,9 @@
   "name": "package",
   "version": "0.0.1",
   "dependencies": {
-    "d3": "~3.4.6"
+    "d3": "~3.4.6",
+    "threejs": "*",
+    "threejs-controls": "*"
   },
   "devDependencies": {
     "bootstrap": "~3.3.1"

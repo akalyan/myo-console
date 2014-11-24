@@ -20,12 +20,11 @@ module.exports = function(conf){
   app.engine('jade', require('jade').__express);
 
   app.get("/", function(req, res, next) {
-    dir.paths(conf.dir, function(err,paths){
-      if(err)
-        res.send(500);
-      var filtered_dirs = paths.dirs.filter(excluded_folders).map(relative_dirs);
-      res.render("index.jade", {dirs:filtered_dirs});
-    })
+    res.render("index.jade");
+  });
+
+  app.get("/three-d", function(req, res, next) {
+    res.render("three-d.jade");
   });
 
   var relative_dirs = function(curr) {
