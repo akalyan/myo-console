@@ -75,12 +75,6 @@ $(document).ready(function() {
       }
     });
 
-    $('#pause').click(function() {
-      paused = !paused;
-      if (!paused)
-        requestAnimationFrame(refreshGraphs);
-    });
-
     var refreshGraphs = function() {
       if (paused) return;
 
@@ -160,6 +154,27 @@ $(document).ready(function() {
         .attr('d', lineFunc(data.data))
         .attr('stroke-width', 1)
         .attr('fill', 'none');
+    };
+
+    /*
+     * Set up the controls.
+     */
+    var Controls = function() {
+      this.zeroOrientation = function() {
+        myMyo.zeroOrientation();
+      };
+      this.pauseDisplay = function() {
+        paused = !paused;
+        if (!paused)
+          requestAnimationFrame(refreshGraphs);
+      };
+    };
+
+    window.onload = function() {
+      var c = new Controls();
+      var gui = new dat.GUI();
+      gui.add(c, 'zeroOrientation');
+      gui.add(c, 'pauseDisplay');
     };
 
   });
