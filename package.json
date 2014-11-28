@@ -2,7 +2,6 @@
   "name": "generator-d3-iris",
   "version": "0.0.1",
   "dependencies": {
-    "gulp": "~3.6.2",
     "express": "~4.1.1",
     "connect-livereload": "~0.4.0",
     "tiny-lr": "0.0.7",
@@ -12,6 +11,7 @@
   },
   "author": "Luis gutierrez",
   "devDependencies": {
+    "gulp": "~3.8.10",
     "myo": "^1.0.0",
     "ws": "^0.5.0"
   }
