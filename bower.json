@@ -5,7 +5,10 @@
     "d3": "~3.4.6",
     "threejs": "*",
     "threejs-controls": "*",
-    "dat-gui": "~0.5.0"
+    "dat-gui": "~0.5.0",
+    "react": "~0.12.1",
+    "rxjs": "~2.3.18",
+    "ramda": "~0.8.0"
   },
   "devDependencies": {
     "bootstrap": "~3.3.1"

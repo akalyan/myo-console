@@ -27,6 +27,10 @@ module.exports = function(conf){
     res.render("three-d.jade");
   });
 
+  app.get("/playground", function(req, res, next) {
+    res.render("playground.jade");
+  });
+
   var relative_dirs = function(curr) {
     return path.relative(conf.dir, curr);
   };
