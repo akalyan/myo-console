@@ -11,11 +11,13 @@ module.exports = function(conf){
 
   var conf = _.extend({
     dir : path.join(__dirname, 'app'),
+    output: path.join(__dirname, 'output'),
     port : 8080
   },conf);
 
   app.use(require('connect-livereload')());
   app.use(express.static(conf.dir));
+  app.use('/output', express.static(conf.output));
   app.set("views", conf.dir)
   app.engine('jade', require('jade').__express);
 

@@ -4,7 +4,7 @@ $(document).ready(function() {
    * Set up the scene.
    */
   var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+  var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 1000 );
   camera.position.z = 5;
   scene.add( camera );
 
@@ -33,7 +33,10 @@ $(document).ready(function() {
   var arrowOrientation = {
     x: null,
     y: null,
-    z: null
+    z: null,
+    all: null,
+    gravity: null,
+    fixed: null
   };
 
   var arrowOrientPrime = {
@@ -50,16 +53,25 @@ $(document).ready(function() {
     scene.remove( arrowOrientation.x );
     scene.remove( arrowOrientation.y );
     scene.remove( arrowOrientation.z );
+    scene.remove( arrowOrientation.all );
+    scene.remove( arrowOrientation.fixed );
+    scene.remove( arrowOrientation.gravity );
     arrowOrientation = {
       x: null,
       y: null,
-      z: null
+      z: null,
+      all: null,
+      gravity: null,
+      fixed: null
     };
 
     var orient = data.orientation;
     var xOrientation = new THREE.Vector3( 1, 0, 0 );
     var yOrientation = new THREE.Vector3( 0, 1, 0 );
     var zOrientation = new THREE.Vector3( 0, 0, 1 );
+    var all = new THREE.Vector3( data.accelerometer.x, data.accelerometer.y, data.accelerometer.z );
+    var fixed = new THREE.Vector3( data.accelerometer.x, data.accelerometer.y, data.accelerometer.z );
+    var gravity = new THREE.Vector3 ( 0, 0, 1 );
 
     var quat = new THREE.Quaternion( orient.x, orient.y, orient.z, orient.w );
     globalQuat = quat;
@@ -68,14 +80,23 @@ $(document).ready(function() {
     xOrientation.applyQuaternion( quat );
     yOrientation.applyQuaternion( quat );
     zOrientation.applyQuaternion( quat );
+    // all.applyQuaternion( quat );
+    fixed.applyQuaternion( quat );
+    fixed.sub(gravity);
 
     arrowOrientation.x = new THREE.ArrowHelper(xOrientation, origin, data.accelerometer.x, 0xff0000);
     arrowOrientation.y = new THREE.ArrowHelper(yOrientation, origin, data.accelerometer.y, 0x00ff00);
     arrowOrientation.z = new THREE.ArrowHelper(zOrientation, origin, data.accelerometer.z, 0x0000ff);
+    arrowOrientation.all = new THREE.ArrowHelper( all, origin, all.length(), 0x777777 );
+    arrowOrientation.gravity = new THREE.ArrowHelper( gravity, origin, 0.1, 0x000000 );
+    arrowOrientation.fixed = new THREE.ArrowHelper( fixed, origin, fixed.length(), 0xff0000 );
 
-    scene.add( arrowOrientation.x );
-    scene.add( arrowOrientation.y );
-    scene.add( arrowOrientation.z );
+    //scene.add( arrowOrientation.x );
+    //scene.add( arrowOrientation.y );
+    //scene.add( arrowOrientation.z );
+    scene.add( arrowOrientation.all );
+    scene.add( arrowOrientation.fixed );
+    scene.add( arrowOrientation.gravity );
 
     // remove all this stuff later
 
@@ -102,9 +123,9 @@ $(document).ready(function() {
     arrowOrientPrime.y = new THREE.ArrowHelper(yOrientPrime, origin, 0.5, 0x00ff00);
     arrowOrientPrime.z = new THREE.ArrowHelper(zOrientPrime, origin, 0.5, 0x0000ff);
 
-    scene.add( arrowOrientPrime.x );
-    scene.add( arrowOrientPrime.y );
-    scene.add( arrowOrientPrime.z );
+    //scene.add( arrowOrientPrime.x );
+    //scene.add( arrowOrientPrime.y );
+    //scene.add( arrowOrientPrime.z );
 
   });
 

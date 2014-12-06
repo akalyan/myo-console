@@ -8,7 +8,8 @@
     "dat-gui": "~0.5.0",
     "react": "~0.12.1",
     "rxjs": "~2.3.18",
-    "ramda": "~0.8.0"
+    "ramda": "~0.8.0",
+    "rx-dom": "~4.0.1"
   },
   "devDependencies": {
     "bootstrap": "~3.3.1"
