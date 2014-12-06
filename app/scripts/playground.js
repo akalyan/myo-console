@@ -203,7 +203,6 @@ $(document).ready(function() {
 
   React.render(<LineGraphSet observable={raw} title='Accelerometer' fields={accel_fields} />, document.getElementById('accel_content'));
   React.render(<LineGraphSet observable={adjusted} title='Adjusted for G' fields={accel_fields} />, document.getElementById('adjust_content'));
-  React.render(<LineGraphSet observable={smoothed} title='Gyroscope' fields={gyro_fields} />, document.getElementById('gyro_content'));
   React.render(<LineGraphSet observable={velo} title='Velocity' fields={velo_fields} />, document.getElementById('velo_content'));
   React.render(<LineGraphSet observable={position} title='Position' fields={position_fields} />, document.getElementById('position_content'));
 
@@ -242,6 +241,8 @@ $(document).ready(function() {
 //   .share()
 //   ;
 // React.render(<LineGraphSet observable={smoothed} title='Smoothed' fields={accel_fields} />, document.getElementById('smooth_content'));
+// React.render(<LineGraphSet observable={smoothed} title='Gyroscope' fields={gyro_fields} />, document.getElementById('gyro_content'));
+
 
 
 // === schedule messages in "real" time ===
