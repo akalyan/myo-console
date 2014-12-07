@@ -17,8 +17,8 @@ var LineGraphSet = React.createClass({
 
     return (
       <div class="container">
-        <div class="row"><h2>{this.props.title}</h2></div>
-        <div class="row">
+        <div className="row"><h2>{this.props.title}</h2></div>
+        <div className="row">
           {graphs}
         </div>
       </div>
