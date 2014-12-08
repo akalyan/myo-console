@@ -2,18 +2,26 @@
 
 	MyoRx = {
 
-		createImuObservable : function(pauser){
-			return Rx.Observable.create(
+		createImuObservableFromMyo : function(myo, pauser){
+			var to_return = Rx.Observable.create(
 					function (observer) {
-						Myo.create().on('imu', observer.onNext.bind(observer));
+						myo.on('imu', function(data) {
+							var tr = data;
+							tr.orientationOffset = myo.orientationOffset;
+							observer.onNext(tr);
+						});
 						return Rx.Disposable.create();
 					}
 				)
 				.sample(100) // sampling every 100ms (FIXME)
 				.timestamp() // add a timestamp to each element of the sequence
-				.pausable(pauser) // attach it to the pauser Subject
-				.share()
-				;
+				.share();
+
+			if (pauser) {
+				return to_return.pausable(pauser); // attach it to the pauser Subject
+			} else {
+				return to_return;
+			}
 		},
 
 		createImuObservableFromFile : function(filepath, pauser) {
@@ -23,7 +31,7 @@
 
 			// map it in to the IMU/Observable structure
 			var data = rows.map(function(row) {
-				return {
+				var tr = {
 					'timestamp': +row[0],
 					'value': {
 						'accelerometer': { 'x': +row[1], 'y': +row[2], 'z': +row[3] },
@@ -31,16 +39,33 @@
 						'orientation':   { 'w': +row[7], 'x': +row[8], 'y': +row[9], 'z': +row[10] }
 					}
 				};
+
+				if (row.length > 11) {
+					tr.value.orientationOffset = {
+						'w': +row[11],
+						'x': +row[12],
+						'y': +row[13],
+						'z': +row[14]
+					};
+				} else {
+					tr.value.orientationOffset = { 'w': 0, 'x': 0, 'y': 0, 'z': 0 };
+				}
+
+				return tr;
 			});
 
 			// return the Observable (FIXME: static 20ms delayEach)
-			return Rx.Observable.delayEach(data, 20)
-				.pausable(pauser)
-				.share()
-				;
+			var to_return = Rx.Observable.delayEach(data, 20)
+				.share();
+
+			if (pauser) {
+				return to_return.pausable(pauser);
+			} else {
+				return to_return;
+			}
 		},
 
-		getPositionFromImuObservable : function(imuObservable) {
+		getPositionFromImuObservable : function(imuObservable, gravityTrim) {
 
 			// first adjust for gravity
 			var adjusted = imuObservable
@@ -48,11 +73,15 @@
 					var current_o = d.value.orientation;
 					var current_q = (new THREE.Quaternion(current_o.x, current_o.y, current_o.z, current_o.w)).normalize();
 
+					// var offset_o = d.value.orientationOffset;
+					// var offset_q = (new THREE.Quaternion(offset_o.x, offset_o.y, offset_o.z, offset_o.w)).normalize();
+
 					var current_accel = d.value.accelerometer;
 					var current_v = (new THREE.Vector3(current_accel.x, current_accel.y, current_accel.z));
 
-					var gravity = new THREE.Vector3(0,0,1.0576);
-					current_v.applyQuaternion( current_q );
+					gravityTrim = gravityTrim || 1;
+					var gravity = new THREE.Vector3(0,0,gravityTrim);
+					current_v.applyQuaternion( current_q ); // .applyQuaternion( offset_q.conjugate() );
 					current_v.sub( gravity );
 
 					return {
@@ -64,7 +93,8 @@
 								'z': current_v.z
 							},
 							'gyroscope': d.value.gyroscope,
-							'orientation': d.value.orientation
+							'orientation': d.value.orientation,
+							'orientationOffset': d.value.orientationOffset
 						}
 					};
 				});
@@ -84,7 +114,8 @@
 							},
 							'accelerometer': d.current.value.accelerometer,
 							'gyroscope': d.current.value.gyroscope,
-							'orientation': d.current.value.orientation
+							'orientation': d.current.value.orientation,
+							'orientationOffset': d.current.value.orientationOffset
 						}
 					}
 				})
@@ -103,7 +134,8 @@
 								},
 								'accelerometer': d.value.accelerometer,
 								'gyroscope': d.value.gyroscope,
-								'orientation': d.value.orientation
+								'orientation': d.value.orientation,
+								'orientationOffset': d.value.orientationOffset
 							}
 						};
 					}
@@ -118,7 +150,8 @@
 							},
 							'accelerometer': d.value.accelerometer,
 							'gyroscope': d.value.gyroscope,
-							'orientation': d.value.orientation
+							'orientation': d.value.orientation,
+							'orientationOffset': d.value.orientationOffset
 						}
 					};
 				});
@@ -139,7 +172,8 @@
 							'velocity': d.current.value.velocity,
 							'accelerometer': d.current.value.accelerometer,
 							'gyroscope': d.current.value.gyroscope,
-							'orientation': d.current.value.orientation
+							'orientation': d.current.value.orientation,
+							'orientationOffset': d.current.value.orientationOffset
 						}
 					}
 				})
@@ -155,7 +189,8 @@
 							'velocity': d.value.velocity,
 							'accelerometer': d.value.accelerometer,
 							'gyroscope': d.value.gyroscope,
-							'orientation': d.value.orientation
+							'orientation': d.value.orientation,
+							'orientationOffset': d.value.orientationOffset
 						}
 					};
 				})

@@ -2,6 +2,7 @@ $(document).ready(function() {
 
   // subject to listen to pause/unpause clicks
   var pauser = new Rx.Subject();
+  var myo = null;
 
   // Set up the controls.
   var Controls = function() {
@@ -24,7 +25,8 @@ $(document).ready(function() {
     console.log('reading from file: ' + $.QueryString["file"]);
     raw = MyoRx.createImuObservableFromFile($.QueryString["file"], pauser);
   } else {
-    raw = MyoRx.createImuObservable(pauser);
+    myo = Myo.create();
+    raw = MyoRx.createImuObservableFromMyo(myo, pauser);
   }
 
   var position = MyoRx.getPositionFromImuObservable(raw);

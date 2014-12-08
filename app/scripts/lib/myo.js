@@ -212,7 +212,7 @@
 
 	Myo = {
 		options : {
-		        api_version : 2,
+		  api_version : 3,
 			socket_url  : "ws://127.0.0.1:10138/myo/"
 		},
 		events : [],
@@ -260,7 +260,3 @@
 	Myo.start();
 	if(typeof module !== 'undefined') module.exports = Myo;
 })();
-
-
-
-

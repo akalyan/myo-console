@@ -3,151 +3,166 @@ $(document).ready(function() {
   /*
    * Set up the scene.
    */
-  var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 1000 );
-  camera.position.z = 5;
-  scene.add( camera );
+  var init = function() {
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.01, 1000 );
+    camera.position.z = 5;
+    camera.position.y = 5;
+    camera.position.x = 5;
+    scene.add( camera );
 
-  var renderer = new THREE.WebGLRenderer();
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  renderer.setClearColorHex( 0xffffff, 1 );
-  document.body.appendChild( renderer.domElement );
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setClearColorHex( 0xffffff, 1 );
+    document.body.appendChild( renderer.domElement );
 
-  var controls = new THREE.OrbitControls( camera );
+    var controls = new THREE.OrbitControls( camera );
 
-  var arrowX = new THREE.ArrowHelper(new THREE.Vector3( 1, 0, 0 ), new THREE.Vector3( 0, 0, 0 ), 2, 0x880000);
-  var arrowY = new THREE.ArrowHelper(new THREE.Vector3( 0, 1, 0 ), new THREE.Vector3( 0, 0, 0 ), 2, 0x008800);
-  var arrowZ = new THREE.ArrowHelper(new THREE.Vector3( 0, 0, 1 ), new THREE.Vector3( 0, 0, 0 ), 2, 0x000088);
-  scene.add( arrowX );
-  scene.add( arrowY );
-  scene.add( arrowZ );
+    // initialize the coordinate system
+    var arrowX = new THREE.ArrowHelper(new THREE.Vector3( 1, 0, 0 ), new THREE.Vector3( 0, 0, 0 ), 2, 0x880000);
+    var arrowY = new THREE.ArrowHelper(new THREE.Vector3( 0, 1, 0 ), new THREE.Vector3( 0, 0, 0 ), 2, 0x008800);
+    var arrowZ = new THREE.ArrowHelper(new THREE.Vector3( 0, 0, 1 ), new THREE.Vector3( 0, 0, 0 ), 2, 0x000088);
+    scene.add( arrowX );
+    scene.add( arrowY );
+    scene.add( arrowZ );
 
-  var globalQuat = null;
+    function render() {
+      requestAnimationFrame( render );
+      renderer.render( scene, camera );
+    }
+    render();
 
-  function render() {
-  	requestAnimationFrame( render );
-  	renderer.render( scene, camera );
-  }
-  render();
-
-  var arrowOrientation = {
-    x: null,
-    y: null,
-    z: null,
-    all: null,
-    gravity: null,
-    fixed: null
+    return scene;
   };
 
-  var arrowOrientPrime = {
+  var scene = init();
+
+  // subject to listen to pause/unpause clicks
+  var pauser = new Rx.Subject();
+
+  // global myo for orientation manipulation
+  var myo = null;
+
+  // Set up the controls
+  var gui = new dat.GUI();
+  var Controls = function() {
+    var paused = true;
+    this.pauseDisplay = function() {
+      console.log('pausing');
+      pauser.onNext(paused);
+      paused = !paused;
+    };
+    this.zeroOrientation = function() {
+      if (myo) {
+        console.log('zeroing orientation');
+        console.log('-- lastQuant: ' +
+                      myo.orientationOffset.x + ',' +
+                      myo.orientationOffset.y + ',' +
+                      myo.orientationOffset.z + ',' +
+                      myo.orientationOffset.w);
+        myo.zeroOrientation();
+        console.log('-- lastQuant: ' +
+                      myo.orientationOffset.x + ',' +
+                      myo.orientationOffset.y + ',' +
+                      myo.orientationOffset.z + ',' +
+                      myo.orientationOffset.w);
+      }
+    };
+    this.gravity = 1000.0;
+    this.gravityTrim = function() {
+      var self = this;
+      if (raw) {
+        console.log('gonna set the gravity');
+        raw
+          .map(function(d) {
+            var current_accel = d.value.accelerometer;
+            var current_v = (new THREE.Vector3(current_accel.x, current_accel.y, current_accel.z));
+            return { 'len': current_v.length() };
+          })
+          // .do(function(x) { console.log('length: ' + x.len); })
+          .take(100)
+          .pluck('len')
+          .average()
+          .do(function(x) { console.log('average: ' + x); })
+          .subscribe(function(x) {
+            self.gravity = x * 1000.0;
+            // Iterate over all controllers
+            for (var i in gui.__controllers) {
+              gui.__controllers[i].updateDisplay();
+            }
+          });
+      }
+    };
+  };
+  var c = new Controls();
+  gui.add(c, 'pauseDisplay');
+  gui.add(c, 'zeroOrientation');
+  gui.add(c, 'gravity').min(900).max(1100).step(5); //.onFinishChange(function(v) { alert(v); });
+  gui.add(c, 'gravityTrim');
+
+  // create an empty Rx observable from myo.on('imu') triggers
+  var raw = Rx.Observable.empty();
+
+  // populate raw based on querystring
+  if ($.QueryString["file"]) {
+    console.log('reading from file: ' + $.QueryString["file"]);
+    raw = MyoRx.createImuObservableFromFile($.QueryString["file"], pauser);
+  } else {
+    myo = Myo.create();
+    raw = MyoRx.createImuObservableFromMyo(myo, pauser);
+  }
+
+  var position = MyoRx.getPositionFromImuObservable(raw, c.gravity / 1000.0);
+
+  var device = {
     x: null,
     y: null,
     z: null
   };
 
-  /*
-   * Set up the myo event handler.
-   */
-  var myMyo = Myo.create();
-  myMyo.on('imu', function(data) {
-    scene.remove( arrowOrientation.x );
-    scene.remove( arrowOrientation.y );
-    scene.remove( arrowOrientation.z );
-    scene.remove( arrowOrientation.all );
-    scene.remove( arrowOrientation.fixed );
-    scene.remove( arrowOrientation.gravity );
-    arrowOrientation = {
-      x: null,
-      y: null,
-      z: null,
-      all: null,
-      gravity: null,
-      fixed: null
-    };
+  position.subscribe(
+    function(data) {
 
-    var orient = data.orientation;
-    var xOrientation = new THREE.Vector3( 1, 0, 0 );
-    var yOrientation = new THREE.Vector3( 0, 1, 0 );
-    var zOrientation = new THREE.Vector3( 0, 0, 1 );
-    var all = new THREE.Vector3( data.accelerometer.x, data.accelerometer.y, data.accelerometer.z );
-    var fixed = new THREE.Vector3( data.accelerometer.x, data.accelerometer.y, data.accelerometer.z );
-    var gravity = new THREE.Vector3 ( 0, 0, 1 );
+      // remove the device from the scene
+      scene.remove(device.x);
+      scene.remove(device.y);
+      scene.remove(device.z);
 
-    var quat = new THREE.Quaternion( orient.x, orient.y, orient.z, orient.w );
-    globalQuat = quat;
-    var origin = new THREE.Vector3( 0, 0, 0 );
+      // formulate non-rotated three-axis representation of device
+      var xOrientation = new THREE.Vector3( 1, 0, 0 );
+      var yOrientation = new THREE.Vector3( 0, 1, 0 );
+      var zOrientation = new THREE.Vector3( 0, 0, 1 );
 
-    xOrientation.applyQuaternion( quat );
-    yOrientation.applyQuaternion( quat );
-    zOrientation.applyQuaternion( quat );
-    // all.applyQuaternion( quat );
-    fixed.applyQuaternion( quat );
-    fixed.sub(gravity);
+      var orient = data.value.orientation;
+      var quat = new THREE.Quaternion( orient.x, orient.y, orient.z, orient.w );
 
-    arrowOrientation.x = new THREE.ArrowHelper(xOrientation, origin, data.accelerometer.x, 0xff0000);
-    arrowOrientation.y = new THREE.ArrowHelper(yOrientation, origin, data.accelerometer.y, 0x00ff00);
-    arrowOrientation.z = new THREE.ArrowHelper(zOrientation, origin, data.accelerometer.z, 0x0000ff);
-    arrowOrientation.all = new THREE.ArrowHelper( all, origin, all.length(), 0x777777 );
-    arrowOrientation.gravity = new THREE.ArrowHelper( gravity, origin, 0.1, 0x000000 );
-    arrowOrientation.fixed = new THREE.ArrowHelper( fixed, origin, fixed.length(), 0xff0000 );
+      // rotate the three-axis representation of the device
+      xOrientation.applyQuaternion( quat );
+      yOrientation.applyQuaternion( quat );
+      zOrientation.applyQuaternion( quat );
 
-    //scene.add( arrowOrientation.x );
-    //scene.add( arrowOrientation.y );
-    //scene.add( arrowOrientation.z );
-    scene.add( arrowOrientation.all );
-    scene.add( arrowOrientation.fixed );
-    scene.add( arrowOrientation.gravity );
+      // get position
+      var pos = data.value.position;
+      var p = new THREE.Vector3( pos.x, pos.y, pos.z );
 
-    // remove all this stuff later
+      // create arrows for three-axis representation of device
+      device.x = new THREE.ArrowHelper(xOrientation, p, 1, 0xff0000);
+      device.y = new THREE.ArrowHelper(yOrientation, p, 1, 0x00ff00);
+      device.z = new THREE.ArrowHelper(zOrientation, p, 1, 0x0000ff);
 
-    var xOrientPrime = xOrientation;
-    var yOrientPrime = yOrientation;
-    var zOrientPrime = zOrientation;
+      // add to scene
+      scene.add(device.x);
+      scene.add(device.y);
+      scene.add(device.z);
 
-    var quatPrime = quat.conjugate();
+    },
+    function(error) {
+      console.log('Error: %s', error);
+    },
+    function() {
+      console.log('Observable completed.');
+    }
 
-    xOrientPrime.applyQuaternion( quatPrime );
-    yOrientPrime.applyQuaternion( quatPrime );
-    zOrientPrime.applyQuaternion( quatPrime );
-
-    scene.remove( arrowOrientPrime.x );
-    scene.remove( arrowOrientPrime.y );
-    scene.remove( arrowOrientPrime.z );
-    arrowOrientPrime = {
-      x: null,
-      y: null,
-      z: null
-    };
-
-    arrowOrientPrime.x = new THREE.ArrowHelper(xOrientPrime, origin, 0.5, 0xff0000);
-    arrowOrientPrime.y = new THREE.ArrowHelper(yOrientPrime, origin, 0.5, 0x00ff00);
-    arrowOrientPrime.z = new THREE.ArrowHelper(zOrientPrime, origin, 0.5, 0x0000ff);
-
-    //scene.add( arrowOrientPrime.x );
-    //scene.add( arrowOrientPrime.y );
-    //scene.add( arrowOrientPrime.z );
-
-  });
-
-  /*
-   * Set up the controls.
-   */
-  var Controls = function() {
-    this.zeroOrientation = function() {
-      myMyo.zeroOrientation();
-    };
-    this.printQuaternion = function() {
-      console.log("quat: " + globalQuat.w + ", " + globalQuat.x + ", " + globalQuat.y + ", " + globalQuat.z);
-      var quatP = globalQuat.conjugate();
-      console.log("quat': " + quatP.w + ", " + quatP.x + ", " + quatP.y + ", " + quatP.z);
-    };
-  };
-
-  window.onload = function() {
-    var c = new Controls();
-    var gui = new dat.GUI();
-    gui.add(c, 'zeroOrientation');
-    gui.add(c, 'printQuaternion');
-  };
+  );
 
 });
