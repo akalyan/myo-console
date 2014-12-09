@@ -25,12 +25,16 @@ module.exports = function(conf){
     res.render("index.jade");
   });
 
-  app.get("/three-d", function(req, res, next) {
-    res.render("three-d.jade");
+  app.get("/calibration", function(req, res, next) {
+    res.render("calibration.jade");
   });
 
   app.get("/playground", function(req, res, next) {
     res.render("playground.jade");
+  });
+
+  app.get("/three-d", function(req, res, next) {
+    res.render("three-d.jade");
   });
 
   var relative_dirs = function(curr) {

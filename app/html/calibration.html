@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1.0">
+  <title>calibration</title>
+</head>
+<body>
+
+  <div>Tool for collecting accelerometer and gyroscope samples to be used for calibration per http://robotics.dei.unipd.it/~pretto/papers/tpm_icra2014.pdf</div>
+  <br />
+  <pre id="content"></pre>
+
+  <!-- bower depdendencies //-->
+  <script src='bower_components/jquery/dist/jquery.min.js'></script>
+  <script src='bower_components/d3/d3.js'></script>
+  <script src='bower_components/dat-gui/build/dat.gui.js'></script>
+  <script src='bower_components/rxjs/dist/rx.all.js'></script>
+  <script src='bower_components/rx-dom/dist/rx.dom.js'></script>
+  <script src='bower_components/ramda/ramda.js'></script>
+
+  <!-- local libs //-->
+  <script src='scripts/lib/myo.js'></script>
+  <script src='scripts/lib/myorx.js'></script>
+  <script src='scripts/lib/util.js'></script>
+
+  <!-- the app //-->
+  <script src='scripts/calibration.js'></script>
+</body>
+</html>

@@ -93,12 +93,20 @@ $(document).ready(function() {
           });
       }
     };
+    this.printQuaternion = function() {
+      console.log('-- global quat: ' +
+                    globalQuat.x + ',' +
+                    globalQuat.y + ',' +
+                    globalQuat.z + ',' +
+                    globalQuat.w);
+    };
   };
   var c = new Controls();
   gui.add(c, 'pauseDisplay');
   gui.add(c, 'zeroOrientation');
   gui.add(c, 'gravity').min(900).max(1100).step(5); //.onFinishChange(function(v) { alert(v); });
   gui.add(c, 'gravityTrim');
+  gui.add(c, 'printQuaternion');
 
   // create an empty Rx observable from myo.on('imu') triggers
   var raw = Rx.Observable.empty();
@@ -120,8 +128,12 @@ $(document).ready(function() {
     z: null
   };
 
+  var globalQuat = { 'x': -1, 'y': -1, 'z': -1, 'w': -1 };
+
   position.subscribe(
     function(data) {
+
+      globalQuat = data.value.orientation;
 
       // remove the device from the scene
       scene.remove(device.x);
@@ -143,7 +155,7 @@ $(document).ready(function() {
 
       // get position
       var pos = data.value.position;
-      var p = new THREE.Vector3( pos.x, pos.y, pos.z );
+      var p = new THREE.Vector3( 0, 0, 0 ); //pos.x, pos.y, pos.z );
 
       // create arrows for three-axis representation of device
       device.x = new THREE.ArrowHelper(xOrientation, p, 1, 0xff0000);
