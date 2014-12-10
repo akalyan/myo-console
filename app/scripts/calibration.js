@@ -27,6 +27,12 @@ $(document).ready(function() {
                   'x': R.sum(R.pluck('x', R.pluck('gyroscope', R.pluck('value', d)))) / d.length,
                   'y': R.sum(R.pluck('y', R.pluck('gyroscope', R.pluck('value', d)))) / d.length,
                   'z': R.sum(R.pluck('z', R.pluck('gyroscope', R.pluck('value', d)))) / d.length
+                },
+                'orientation': {
+                  'w': R.sum(R.pluck('w', R.pluck('orientation', R.pluck('value', d)))) / d.length,
+                  'x': R.sum(R.pluck('x', R.pluck('orientation', R.pluck('value', d)))) / d.length,
+                  'y': R.sum(R.pluck('y', R.pluck('orientation', R.pluck('value', d)))) / d.length,
+                  'z': R.sum(R.pluck('z', R.pluck('orientation', R.pluck('value', d)))) / d.length
                 }
               };
               $('#content').text( $('#content').text() +
@@ -37,6 +43,11 @@ $(document).ready(function() {
                 // datum.gyroscope.x + ',' +
                 // datum.gyroscope.y + ',' +
                 // datum.gyroscope.z +
+                // ' | ' +
+                // datum.orientation.w + ',' +
+                // datum.orientation.x + ',' +
+                // datum.orientation.y + ',' +
+                // datum.orientation.z +
                 '\n' );
               self.running = false;
             })
