@@ -3,13 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1.0">
+  <link href="http://fonts.googleapis.com/css?family=Arvo:400,400" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="styles/index.css">
   <title>calibration</title>
 </head>
 <body>
 
-  <div>Tool for collecting accelerometer and gyroscope samples to be used for calibration per http://robotics.dei.unipd.it/~pretto/papers/tpm_icra2014.pdf</div>
-  <br />
-  <pre id="content"></pre>
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+      <a class="navbar-brand" href="/">Myo Debug Console</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="panel">
+      <div class="panel-heading">
+        <h4>Tool for collecting accelerometer and gyroscope samples to be used for calibration per <a href="http://robotics.dei.unipd.it/~pretto/papers/tpm_icra2014.pdf">this paper</a>.</h4>
+      </div>
+      <div class="panel-body">
+        <code id="content"></code>
+      </div>
+    </div>
+  </div>
 
   <!-- bower depdendencies //-->
   <script src='bower_components/jquery/dist/jquery.min.js'></script>
