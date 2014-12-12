@@ -35,7 +35,7 @@ $(document).ready(function() {
                   'z': R.sum(R.pluck('z', R.pluck('orientation', R.pluck('value', d)))) / d.length
                 }
               };
-              $('#content').text( $('#content').text() +
+              $('#content').html( $('#content').html() +
                 datum.accelerometer.x + ',' +
                 datum.accelerometer.y + ',' +
                 datum.accelerometer.z +
@@ -48,7 +48,7 @@ $(document).ready(function() {
                 // datum.orientation.x + ',' +
                 // datum.orientation.y + ',' +
                 // datum.orientation.z +
-                '\n' );
+                "\n" );
               self.running = false;
             })
           });
