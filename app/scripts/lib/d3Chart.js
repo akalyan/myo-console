@@ -31,27 +31,31 @@ function d3Chart() {
 
   this._scales = function(el, props, data) {
 
+    // expecting data to be an array of datasets (arrays)
+    var D = [];
+    if (!( data[0] instanceof Array) ) {
+      D.push(data);
+    } else {
+      D = data;
+    }
+
     var xRange = d3.scale.linear()
       .range([props.margins.left, $(el).width() - props.margins.right])
-      .domain([0, data.length]);
+      .domain([0, R.reduce(function(acc, val) { return d3.max([acc, val.length]); }, 0, D)]);
 
-    if (this.min != null) {
-      this.min = d3.min([
-        this.min,
-        d3.min(data, function(d) { return d; })
-      ]);
-    } else {
-      this.min = d3.min(data, function(d) { return d; });
-    }
+    this.min = R
+      .reduce(
+        function(acc, val) { return d3.min([acc, d3.min(val, function(d) { return d; })]); },
+        ( (this.min == null) ? D[0][0] : this.min ),
+        D
+      );
 
-    if (this.max != null) {
-      this.max = d3.max([
-        this.max,
-        d3.max(data, function(d) { return d; })
-      ]);
-    } else {
-      this.max = d3.max(data, function(d) { return d; });
-    }
+    this.max = R
+      .reduce(
+        function(acc, val) { return d3.max([acc, d3.max(val, function(d) { return d; })]); },
+        ( (this.max == null) ? D[0][0] : this.max ),
+        D
+      );
 
     var yRange = d3.scale.linear()
       .range([$(el).height() - props.margins.bottom, props.margins.top])
@@ -66,7 +70,13 @@ function d3Chart() {
 
   this._drawLine = function(el, props, scales, data) {
 
-    var g = d3.select(el).selectAll('.d3-points');
+    // expecting data to be an array of datasets (arrays)
+    var D = [];
+    if (!( data[0] instanceof Array) ) {
+      D.push(data);
+    } else {
+      D = data;
+    }
 
     // draw the y-axis
     var yAxis = d3.svg.axis()
@@ -75,22 +85,30 @@ function d3Chart() {
       .orient("left")
       .tickSubdivide(true);
 
+    var g = d3.select(el).selectAll('.d3-points');
     g.selectAll('g').remove();
+
     g.append('svg:g')
       .attr('class', 'y axis')
       .attr('transform', 'translate(' + props.margins.left + ',0)')
       .call(yAxis);
 
-    var lineFunc = d3.svg.line()
-      .x(function(d, i) { return scales.x(i); })
-      .y(function(d) { return scales.y(d); })  // should be d.value
-      .interpolate('linear');
+    var c10 = d3.scale.category10();
 
     g.selectAll('path').remove();
-    g.append('svg:path')
-      .attr('d', lineFunc(data))
-      .attr('stroke-width', 1)
-      .attr('fill', 'none');
+    R.forEach(function(val) {
+      var lineFunc = d3.svg.line()
+        .x(function(d, i) { return scales.x(i); })
+        .y(function(d) { return scales.y(d); })  // should be d.value
+        .interpolate('linear');
+
+      g.append('svg:path')
+        .attr('d', lineFunc(val))
+        .attr('stroke', c10)
+        .attr('stroke-width', 1)
+        .attr('fill', 'none');
+    }, D);
+
   };
 
 };

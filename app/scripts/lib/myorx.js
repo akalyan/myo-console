@@ -1,4 +1,4 @@
-(function(Myo, Rx, $) {
+(function(Myo, Rx, $, THREE) {
 
 	MyoRx = {
 
@@ -65,10 +65,10 @@
 			}
 		},
 
-		getPositionFromImuObservable : function(imuObservable, gravityTrim) {
+		getAdjustedFromImuObservable : function(imuObservable, gravityTrim) {
 
 			// first adjust for gravity
-			var adjusted = imuObservable
+			return imuObservable
 				.map(function(d) {
 					var current_o = d.value.orientation;
 					var current_q = (new THREE.Quaternion(current_o.x, current_o.y, current_o.z, current_o.w)).normalize();
@@ -79,10 +79,19 @@
 					var current_accel = d.value.accelerometer;
 					var current_v = (new THREE.Vector3(current_accel.x, current_accel.y, current_accel.z));
 
+					var angles = new THREE.Vector3(	Math.atan2(current_accel.y, current_accel.z) + Math.PI,
+																					Math.atan2(current_accel.z, current_accel.x) + Math.PI,
+																					Math.atan2(current_accel.x, current_accel.y) + Math.PI );
+
 					gravityTrim = gravityTrim || 1;
 					var gravity = new THREE.Vector3(0,0,gravityTrim);
 					current_v.applyQuaternion( current_q ); // .applyQuaternion( offset_q.conjugate() );
-					current_v.sub( gravity );
+					// current_v.applyQuaternion( (new THREE.Quaternion()).setFromEuler(new THREE.Euler(angles.x, angles.y, angles.z, 'XYZ')) );
+					current_v.sub( gravity.applyQuaternion( current_q ) );
+
+					if (current_v.length() < 0.06) {
+						current_v = new THREE.Vector3(0,0,0);
+					}
 
 					return {
 						'timestamp': d.timestamp,
@@ -92,12 +101,24 @@
 								'y': current_v.y,
 								'z': current_v.z
 							},
+							'euler': {
+								'x': angles.x,
+								'y': angles.y,
+								'z': angles.z
+							},
 							'gyroscope': d.value.gyroscope,
 							'orientation': d.value.orientation,
 							'orientationOffset': d.value.orientationOffset
 						}
 					};
 				});
+
+		},
+
+		getPositionFromImuObservable : function(imuObservable, gravityTrim) {
+
+			// first adjust for gravity
+			var adjusted = this.getAdjustedFromImuObservable(imuObservable, gravityTrim);
 
 			// integrate the velocity
 			var velo = adjusted.zip(adjusted.skip(1), function(s1, s2) {
@@ -113,6 +134,7 @@
 								'z': (d.current.timestamp - d.previous.timestamp) / 1000 * (d.current.value.accelerometer.z * 9.81)
 							},
 							'accelerometer': d.current.value.accelerometer,
+							'euler': d.current.value.euler,
 							'gyroscope': d.current.value.gyroscope,
 							'orientation': d.current.value.orientation,
 							'orientationOffset': d.current.value.orientationOffset
@@ -133,6 +155,7 @@
 									'z': 0
 								},
 								'accelerometer': d.value.accelerometer,
+								'euler': d.value.euler,
 								'gyroscope': d.value.gyroscope,
 								'orientation': d.value.orientation,
 								'orientationOffset': d.value.orientationOffset
@@ -149,6 +172,7 @@
 								'z': acc.value.velocity.z + d.value.velocity.z
 							},
 							'accelerometer': d.value.accelerometer,
+							'euler': d.value.euler,
 							'gyroscope': d.value.gyroscope,
 							'orientation': d.value.orientation,
 							'orientationOffset': d.value.orientationOffset
@@ -171,6 +195,7 @@
 							},
 							'velocity': d.current.value.velocity,
 							'accelerometer': d.current.value.accelerometer,
+							'euler': d.current.value.euler,
 							'gyroscope': d.current.value.gyroscope,
 							'orientation': d.current.value.orientation,
 							'orientationOffset': d.current.value.orientationOffset
@@ -188,6 +213,7 @@
 							},
 							'velocity': d.value.velocity,
 							'accelerometer': d.value.accelerometer,
+							'euler': d.value.euler,
 							'gyroscope': d.value.gyroscope,
 							'orientation': d.value.orientation,
 							'orientationOffset': d.value.orientationOffset
@@ -204,4 +230,4 @@
 
 	if(typeof module !== 'undefined') module.exports = MyoRx;
 
-})(Myo, Rx, jQuery);
+})(Myo, Rx, jQuery, THREE);

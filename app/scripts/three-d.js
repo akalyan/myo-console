@@ -11,12 +11,12 @@ $(document).ready(function() {
     camera.position.x = 5;
     scene.add( camera );
 
+    var controls = new THREE.OrbitControls( camera );
+
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.setClearColorHex( 0xffffff, 1 );
     document.body.appendChild( renderer.domElement );
-
-    var controls = new THREE.OrbitControls( camera );
 
     // initialize the coordinate system
     var arrowX = new THREE.ArrowHelper(new THREE.Vector3( 1, 0, 0 ), new THREE.Vector3( 0, 0, 0 ), 2, 0x880000);
@@ -120,9 +120,15 @@ $(document).ready(function() {
     raw = MyoRx.createImuObservableFromMyo(myo, pauser);
   }
 
-  var position = MyoRx.getPositionFromImuObservable(raw, c.gravity / 1000.0);
+  var position = MyoRx.getAdjustedFromImuObservable(raw, c.gravity / 1000.0);
 
   var device = {
+    x: null,
+    y: null,
+    z: null
+  };
+
+  var deviceE = {
     x: null,
     y: null,
     z: null
@@ -140,32 +146,48 @@ $(document).ready(function() {
       scene.remove(device.y);
       scene.remove(device.z);
 
+      scene.remove(deviceE.x);
+      scene.remove(deviceE.y);
+      scene.remove(deviceE.z);
+
+      var orient = data.value.orientation;
+      var quat = new THREE.Quaternion( orient.x, orient.y, orient.z, orient.w );
+
+      var euler = data.value.euler;
+      var rpy = new THREE.Euler(euler.x, euler.y, euler.z, 'XYZ');
+      var fromEuler = (new THREE.Quaternion()).setFromEuler(rpy);
+
+      // get position
+      var pos = data.value.accelerometer;
+      var p = new THREE.Vector3( 0, 0, 0 ); //pos.x, pos.y, pos.z );
+
       // formulate non-rotated three-axis representation of device
       var xOrientation = new THREE.Vector3( 1, 0, 0 );
       var yOrientation = new THREE.Vector3( 0, 1, 0 );
       var zOrientation = new THREE.Vector3( 0, 0, 1 );
 
-      var orient = data.value.orientation;
-      var quat = new THREE.Quaternion( orient.x, orient.y, orient.z, orient.w );
-
-      // rotate the three-axis representation of the device
-      xOrientation.applyQuaternion( quat );
-      yOrientation.applyQuaternion( quat );
-      zOrientation.applyQuaternion( quat );
-
-      // get position
-      var pos = data.value.position;
-      var p = new THREE.Vector3( 0, 0, 0 ); //pos.x, pos.y, pos.z );
-
       // create arrows for three-axis representation of device
-      device.x = new THREE.ArrowHelper(xOrientation, p, 1, 0xff0000);
-      device.y = new THREE.ArrowHelper(yOrientation, p, 1, 0x00ff00);
-      device.z = new THREE.ArrowHelper(zOrientation, p, 1, 0x0000ff);
+      device.x = new THREE.ArrowHelper(xOrientation.applyQuaternion(quat), p, pos.x, 0xff0000);
+      device.y = new THREE.ArrowHelper(yOrientation.applyQuaternion(quat), p, pos.y, 0x00ff00);
+      device.z = new THREE.ArrowHelper(zOrientation.applyQuaternion(quat), p, pos.z, 0x0000ff);
+
+      // formulate non-rotated three-axis representation of device
+      xOrientation = new THREE.Vector3( 1, 0, 0 );
+      yOrientation = new THREE.Vector3( 0, 1, 0 );
+      zOrientation = new THREE.Vector3( 0, 0, 1 );
+
+      deviceE.x = new THREE.ArrowHelper(xOrientation.applyQuaternion(fromEuler), p, 0.7, 0x880000);
+      deviceE.y = new THREE.ArrowHelper(yOrientation.applyQuaternion(fromEuler), p, 0.7, 0x008800);
+      deviceE.z = new THREE.ArrowHelper(zOrientation.applyQuaternion(fromEuler), p, 0.7, 0x000088);
 
       // add to scene
       scene.add(device.x);
       scene.add(device.y);
       scene.add(device.z);
+
+      // scene.add(deviceE.x);
+      // scene.add(deviceE.y);
+      // scene.add(deviceE.z);
 
     },
     function(error) {

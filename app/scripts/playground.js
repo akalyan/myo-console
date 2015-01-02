@@ -31,21 +31,6 @@ $(document).ready(function() {
 
   var position = MyoRx.getPositionFromImuObservable(raw);
 
-  // for debugging gravity calibration
-  var gravity = raw
-    .map(function(d) {
-      var current_accel = d.value.accelerometer;
-      var current_v = (new THREE.Vector3(current_accel.x, current_accel.y, current_accel.z));
-      return { 'len': current_v.length() };
-    })
-    .do(function(x) { console.log('length: ' + x.len); })
-    .take(100)
-    .pluck('len')
-    .average()
-    .do(function(x) { console.log('average: ' + x); })
-    .subscribe(function(x) {})
-    ;
-
   // utility function for creating the title/accessor fields array
   var create_fields = function(field, subfields) {
     return subfields.map(function(x) {
@@ -54,9 +39,9 @@ $(document).ready(function() {
   };
 
   // more refactoring possible here to create an app component...later
-  React.render(<LineGraphSet observable={raw} title='Accelerometer' fields={create_fields('accelerometer', ['x','y','z'])} />, document.getElementById('accel_content'));
-  React.render(<LineGraphSet observable={position} title='Adjusted for G' fields={create_fields('accelerometer', ['x','y','z'])} />, document.getElementById('adjust_content'));
-  React.render(<LineGraphSet observable={position} title='Velocity' fields={create_fields('velocity', ['x','y','z'])} />, document.getElementById('velo_content'));
-  React.render(<LineGraphSet observable={position} title='Position' fields={create_fields('position', ['x','y','z'])} />, document.getElementById('position_content'));
+  React.render(<LineGraphSet observables={[raw]} title='Accelerometer' fields={create_fields('accelerometer', ['x','y','z'])} />, document.getElementById('accel_content'));
+  React.render(<LineGraphSet observables={[position]} title='Adjusted for G' fields={create_fields('accelerometer', ['x','y','z'])} />, document.getElementById('adjust_content'));
+  React.render(<LineGraphSet observables={[position]} title='Velocity' fields={create_fields('velocity', ['x','y','z'])} />, document.getElementById('velo_content'));
+  React.render(<LineGraphSet observables={[position]} title='Position' fields={create_fields('position', ['x','y','z'])} />, document.getElementById('position_content'));
 
 });

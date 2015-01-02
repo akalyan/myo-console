@@ -14,7 +14,7 @@ var LineGraphBox = React.createClass({
   },
 
   getInitialState: function() {
-    return {data: null};
+    return {data: []};
   },
 
   componentDidMount: function() {
@@ -23,9 +23,10 @@ var LineGraphBox = React.createClass({
     var field = this.props.field;
     var self = this;
 
-    Rx.Observable.repeat(0, this.props.max_records-1)
-      .concat(this.props.observable)
-      .bufferWithCount(this.props.max_records,1)
+    R.forEach.idx(function(val, idx) {
+      Rx.Observable.repeat(0, self.props.max_records-1)
+      .concat(val)
+      .bufferWithCount(self.props.max_records,1)
       .subscribe(function(array) {
         var plucked = R.map(function(obj) {
           var acc = obj;
@@ -34,8 +35,9 @@ var LineGraphBox = React.createClass({
           });
           return acc;
         }, array);
-        self.setData(plucked);
+        self.setDataElement(idx, plucked);
       });
+    }, this.props.observables);
 
     // create the chart
     var el = this.refs.chart.getDOMNode();
@@ -65,6 +67,12 @@ var LineGraphBox = React.createClass({
 
   setData: function(d) {
     this.setState({ data: d });
+  },
+
+  setDataElement: function(index, d) {
+    var temp = this.state.data;
+    temp[index] = d;
+    this.setState({ data: temp });
   },
 
   getChartData: function() {

@@ -7,11 +7,11 @@ var LineGraphSet = React.createClass({
   },
 
   render: function() {
-    var obs = this.props.observable;
+    var obs = this.props.observables;
     var height = this.props.height;
     var graphs = this.props.fields.map(function (field) {
       return (
-        <LineGraphBox height={height} field={field.accessor} observable={obs} title={field.title} />
+        <LineGraphBox height={height} field={field.accessor} observables={obs} title={field.title} />
       );
     });
 
