@@ -13,6 +13,14 @@ function d3Chart() {
     this.min = null;
     this.max = null;
 
+    // FIXME:
+    // statically capturing the width and height when the chart is initialized
+    // to avoid layout thrashing when if I read it on every frame.
+    // the downside of this approach is that the display will be screwed up
+    // if the window is resized.
+    this.width = $(el).width();
+    this.height = $(el).height();
+
     this.update(el, props, []);
   };
 
@@ -40,7 +48,7 @@ function d3Chart() {
     }
 
     var xRange = d3.scale.linear()
-      .range([props.margins.left, $(el).width() - props.margins.right])
+      .range([props.margins.left, this.width - props.margins.right])
       .domain([0, R.reduce(function(acc, val) { return d3.max([acc, val.length]); }, 0, D)]);
 
     this.min = R
@@ -58,7 +66,7 @@ function d3Chart() {
       );
 
     var yRange = d3.scale.linear()
-      .range([$(el).height() - props.margins.bottom, props.margins.top])
+      .range([this.height - props.margins.bottom, props.margins.top])
       .domain([this.min,this.max]);
 
     return {

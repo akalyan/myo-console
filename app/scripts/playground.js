@@ -25,7 +25,7 @@ $(document).ready(function() {
     console.log('reading from file: ' + $.QueryString["file"]);
     raw = MyoRx.createImuObservableFromFile($.QueryString["file"], pauser);
   } else {
-    myo = Myo.create();
+    myo = Myo.create(0);
     raw = MyoRx.createImuObservableFromMyo(myo, pauser);
   }
 
