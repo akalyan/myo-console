@@ -21,6 +21,8 @@ text {
   color: rgb(110, 175, 181);
 }
 
-.chart {
-  -webkit-transform: translateZ(0);
+.Chart {
+  /* -webkit-transform: translateZ(0); */
+  overflow: hidden;
+  position: relative;
 }

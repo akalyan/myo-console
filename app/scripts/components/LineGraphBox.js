@@ -44,9 +44,8 @@ var LineGraphBox = React.createClass({
     this.setState({ chart: new d3Chart() });
     this.state.chart.init(el, this.props, this.getChartData());
 
-    Rx.Scheduler.requestAnimationFrame.schedule(function redraw() {
+    this.props.renderer.subscribe(function(val) {
       self.forceUpdate();
-      requestAnimationFrame(redraw);
     });
 
   },

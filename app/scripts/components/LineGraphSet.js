@@ -6,17 +6,38 @@ var LineGraphSet = React.createClass({
     };
   },
 
+  componentWillMount: function() {
+    var i = 0;
+    var renderers = {};
+    var children = this.props.fields;
+
+    children.forEach(function(field) {
+      renderers[field.accessor] = new Rx.Subject();
+    });
+
+    this.setState({ renderers: renderers });
+
+    Rx.Scheduler.requestAnimationFrame.schedule(function redraw() {
+      var to_render = children[i % children.length];
+      // console.log("rendering " + to_render.accessor);
+      renderers[to_render.accessor].onNext(1);
+      i++;
+      requestAnimationFrame(redraw);
+    });
+  },
+
   render: function() {
     var obs = this.props.observables;
     var height = this.props.height;
+    var self = this;
     var graphs = this.props.fields.map(function (field) {
       return (
-        <LineGraphBox height={height} field={field.accessor} observables={obs} title={field.title} />
+        <LineGraphBox key={field.title} height={height} field={field.accessor} observables={obs} renderer={self.state.renderers[field.accessor]} title={field.title} />
       );
     });
 
     return (
-      <div class="container">
+      <div className="container">
         <div className="row"><h2>{this.props.title}</h2></div>
         <div className="row">
           {graphs}

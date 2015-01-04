@@ -12,6 +12,7 @@ function d3Chart() {
 
     this.min = null;
     this.max = null;
+    this.scalesChanged = false;
 
     // FIXME:
     // statically capturing the width and height when the chart is initialized
@@ -46,6 +47,8 @@ function d3Chart() {
     } else {
       D = data;
     }
+    var old_min = ( (this.min == null) ? D[0][0] : this.min );
+    var old_max = ( (this.max == null) ? D[0][0] : this.max );
 
     var xRange = d3.scale.linear()
       .range([props.margins.left, this.width - props.margins.right])
@@ -54,20 +57,26 @@ function d3Chart() {
     this.min = R
       .reduce(
         function(acc, val) { return d3.min([acc, d3.min(val, function(d) { return d; })]); },
-        ( (this.min == null) ? D[0][0] : this.min ),
+        old_min,
         D
       );
 
     this.max = R
       .reduce(
         function(acc, val) { return d3.max([acc, d3.max(val, function(d) { return d; })]); },
-        ( (this.max == null) ? D[0][0] : this.max ),
+        old_max,
         D
       );
 
     var yRange = d3.scale.linear()
       .range([this.height - props.margins.bottom, props.margins.top])
       .domain([this.min,this.max]);
+
+    if (old_min != this.min || old_max != this.max) {
+      this.scalesChanged = true;
+    } else {
+      this.scalesChanged = false;
+    }
 
     return {
       x: xRange,
@@ -86,20 +95,25 @@ function d3Chart() {
       D = data;
     }
 
-    // draw the y-axis
-    var yAxis = d3.svg.axis()
-      .scale(scales.y)
-      .tickSize(5)
-      .orient("left")
-      .tickSubdivide(true);
-
     var g = d3.select(el).selectAll('.d3-points');
-    g.selectAll('g').remove();
 
-    g.append('svg:g')
-      .attr('class', 'y axis')
-      .attr('transform', 'translate(' + props.margins.left + ',0)')
-      .call(yAxis);
+    if (this.scalesChanged) {
+      // create the y-axis
+      var yAxis = d3.svg.axis()
+        .scale(scales.y)
+        .tickSize(5)
+        .orient("left")
+        .tickSubdivide(true);
+
+      // remove old one
+      g.selectAll('g').remove();
+
+      // append new one
+      g.append('svg:g')
+        .attr('class', 'y axis')
+        .attr('transform', 'translate(' + props.margins.left + ',0)')
+        .call(yAxis);
+    }
 
     var c10 = d3.scale.category10();
 
@@ -110,8 +124,10 @@ function d3Chart() {
         .y(function(d) { return scales.y(d); })  // should be d.value
         .interpolate('linear');
 
+      var p = lineFunc(val);
+
       g.append('svg:path')
-        .attr('d', lineFunc(val))
+        .attr('d', p)
         .attr('stroke', c10)
         .attr('stroke-width', 1)
         .attr('fill', 'none');
