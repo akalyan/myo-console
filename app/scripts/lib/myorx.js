@@ -1,3 +1,8 @@
+var Myo = require('./myo');
+var Rx = require('rx');
+var jQuery = require('jquery');
+var THREE = require('threejs');
+
 (function(Myo, Rx, $, THREE) {
 
 	MyoRx = {

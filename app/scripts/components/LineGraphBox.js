@@ -1,4 +1,9 @@
-var LineGraphBox = React.createClass({
+var d3Chart = require('../lib/d3Chart');
+var Rx = require('rx');
+var R = require('ramda');
+var React = require('react');
+
+module.exports = React.createClass({
   getDefaultProps: function() {
     return {
       width: '100%',

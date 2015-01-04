@@ -1,8 +1,8 @@
-<<<<<<< HEAD
 app/bower_components/*
 node_modules/*
+app/build
 *~
-=======
+
 # Logs
 logs
 *.log
@@ -31,4 +31,3 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
->>>>>>> 880577c3478411c1b9afb2428c95c390d4ca0bf3

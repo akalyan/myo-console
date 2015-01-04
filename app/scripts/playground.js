@@ -1,3 +1,13 @@
+var $ = require('jquery');
+var Rx = require('rx');
+
+var util = require('./lib/util');
+var MyoRx = require('./lib/myorx');
+
+var React = require('react');
+
+var LineGraphSet = require('./components/LineGraphSet');
+
 $(document).ready(function() {
 
   // subject to listen to pause/unpause clicks

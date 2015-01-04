@@ -1,3 +1,7 @@
+var jQuery = require('jquery');
+var Rx = require('rx');
+var d3 = require('d3');
+
 (function($) {
   $.QueryString = (function(a) {
     if (a == "") return {};

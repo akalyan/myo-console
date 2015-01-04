@@ -1,4 +1,9 @@
-var LineGraphSet = React.createClass({
+var LineGraphBox = require('./LineGraphBox');
+var Rx = require('rx');
+require('../lib/rx.dom');
+var React = require('react');
+
+module.exports = React.createClass({
   getDefaultProps: function() {
     return {
       height: '150px',

@@ -1,4 +1,7 @@
-function d3Chart() {
+var $ = require('jquery');
+var R = require('ramda');
+
+module.exports = function() {
 
   this.init = function(el, props) {
 

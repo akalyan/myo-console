@@ -6,8 +6,6 @@
   <title>playground</title>
   <link href="http://fonts.googleapis.com/css?family=Arvo:400,400" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
-  <script src='bower_components/react/react-with-addons.js'></script>
-  <script src='bower_components/react/JSXTransformer.js'></script>
   <link rel="stylesheet" href="styles/index.css">
   <style>
 		body { margin: 0; }
@@ -32,27 +30,11 @@
 
     </div>
 
-  <!-- bower depdendencies //-->
-  <script src='bower_components/jquery/dist/jquery.min.js'></script>
+  <!-- dat.gui not loading with webpack //-->
   <script src='bower_components/dat-gui/build/dat.gui.js'></script>
-  <script src='bower_components/threejs/build/three.min.js'></script>
-  <script src='bower_components/d3/d3.js'></script>
-  <script src='bower_components/rxjs/dist/rx.all.js'></script>
-  <script src='bower_components/rx-dom/dist/rx.dom.js'></script>
-  <script src='bower_components/ramda/ramda.js'></script>
-
-  <!-- local libs //-->
-  <script src='scripts/lib/myo.js'></script>
-  <script src='scripts/lib/myorx.js'></script>
-  <script src='scripts/lib/d3Chart.js'></script>
-  <script src='scripts/lib/util.js'></script>
-
-  <!-- react components //-->
-  <script type="text/jsx" src='scripts/components/LineGraphBox.js'></script>
-  <script type="text/jsx" src='scripts/components/LineGraphSet.js'></script>
 
   <!-- the app //-->
-  <script type="text/jsx" src='scripts/playground.js'></script>
+  <script src='build/playground.js'></script>
 
 </body>
 </html>
